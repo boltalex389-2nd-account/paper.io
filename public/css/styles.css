@@ -28,11 +28,9 @@ body, html {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
-	background: white;
 	color: white;
 	font-family: "Changa", "Sans Serif";
 	user-select: none;
-	background-attachment: fixed;
 }
 canvas {
 	position: fixed;
@@ -66,12 +64,14 @@ canvas {
 	height: 160px;
 }
 .center {
-	vertical-align: middle;
 	text-align: center;
 	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+.center img {
+	display: block;
 }
 .scale {
 	animation: scale 5s infinite ease-in-out;
