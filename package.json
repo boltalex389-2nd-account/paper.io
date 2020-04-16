@@ -23,6 +23,7 @@
 	},
 	"homepage": "https://github.com/stevenjoezhang/paper.io",
 	"dependencies": {
+		"@fortawesome/fontawesome-free": "^5.13.0",
 		"chalk": "^3.0.0",
 		"express": "^4.17.1",
 		"jquery": "^3.4.1",
