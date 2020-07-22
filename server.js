@@ -6,7 +6,7 @@ const os = require("os");
 const chalk = require("chalk");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-const { exec } = require("child_process");
+const { exec, fork } = require("child_process");
 
 var config = require("./config.json");
 config.dev ? exec("npm run build-dev") : exec("npm run build");
@@ -58,12 +58,7 @@ setInterval(() => {
 }, 1000 / 60);
 
 for (var i = 0; i < parseInt(config.bots); i++) {
-	exec(`node ${path.join(__dirname, "paper-io-bot.js")} ws://localhost:${port}`, (error, stdout, stderr) => {
-		if (error) {
-			console.error("error: " + error);
-			return;
-		}
-		console.log("stdout: " + stdout);
-		console.log("stderr: " + typeof stderr);
+	fork(path.join(__dirname, "paper-io-bot.js"), [`ws://localhost:${port}`], {
+		stdio: 'inherit'
 	});
 }
