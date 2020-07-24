@@ -24,67 +24,77 @@ function hslToRgb(h, s, l) {
 	}
 	return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
-function Color(h, s, l, a) {
-	verifyRange(h, s, l);
-	if (a === undefined) a = 1;
-	else verifyRange(a);
-	Object.defineProperties(this, {
-		"hue": {
-			value: h,
-			enumerable: true
-		},
-		"sat": {
-			value: s,
-			enumerable: true
-		},
-		"lum": {
-			value: l,
-			enumerable: true
-		},
-		"alpha": {
-			value: a,
-			enumerable: true
-		},
-	});
+
+class Color {
+    constructor(h, s, l, a) {
+        verifyRange(h, s, l);
+        if (a === undefined) a = 1;
+        else verifyRange(a);
+        Object.defineProperties(this, {
+            "hue": {
+                value: h,
+                enumerable: true
+            },
+            "sat": {
+                value: s,
+                enumerable: true
+            },
+            "lum": {
+                value: l,
+                enumerable: true
+            },
+            "alpha": {
+                value: a,
+                enumerable: true
+            },
+        });
+    }
+
+    interpolateToString(color, amount) {
+        const rgbThis = hslToRgb(this.hue, this.sat, this.lum);
+        const rgbThat = hslToRgb(color.hue, color.sat, color.lum);
+        const rgb = [];
+        for (let i = 0; i < 3; i++) {
+            rgb[i] = Math.floor((rgbThat[i] - rgbThis[i]) * amount + rgbThis[i]);
+        }
+        return {
+            rgbString: function() {
+                return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`
+            }
+        };
+    }
+
+    deriveLumination(amount) {
+        let lum = this.lum + amount;
+        lum = Math.min(Math.max(lum, 0), 1);
+        return new Color(this.hue, this.sat, lum, this.alpha);
+    }
+
+    deriveHue(amount) {
+        const hue = this.hue - amount;
+        return new Color(hue - Math.floor(hue), this.sat, this.lum, this.alpha);
+    }
+
+    deriveSaturation(amount) {
+        let sat = this.sat + amount;
+        sat = Math.min(Math.max(sat, 0), 1);
+        return new Color(this.hue, sat, this.lum, this.alpha);
+    }
+
+    deriveAlpha(newAlpha) {
+        verifyRange(newAlpha);
+        return new Color(this.hue, this.sat, this.lum, newAlpha);
+    }
+
+    rgbString() {
+        const rgb = hslToRgb(this.hue, this.sat, this.lum);
+        rgb[3] = this.a;
+        return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${this.alpha})`;
+    }
 }
+
 Color.fromData = data => {
 	return new Color(data.hue, data.sat, data.lum, data.alpha);
-};
-Color.prototype.interpolateToString = function(color, amount) {
-	const rgbThis = hslToRgb(this.hue, this.sat, this.lum);
-	const rgbThat = hslToRgb(color.hue, color.sat, color.lum);
-	const rgb = [];
-	for (let i = 0; i < 3; i++) {
-		rgb[i] = Math.floor((rgbThat[i] - rgbThis[i]) * amount + rgbThis[i]);
-	}
-	return {
-		rgbString: function() {
-			return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`
-		}
-	};
-};
-Color.prototype.deriveLumination = function(amount) {
-	let lum = this.lum + amount;
-	lum = Math.min(Math.max(lum, 0), 1);
-	return new Color(this.hue, this.sat, lum, this.alpha);
-};
-Color.prototype.deriveHue = function(amount) {
-	const hue = this.hue - amount;
-	return new Color(hue - Math.floor(hue), this.sat, this.lum, this.alpha);
-};
-Color.prototype.deriveSaturation = function(amount) {
-	let sat = this.sat + amount;
-	sat = Math.min(Math.max(sat, 0), 1);
-	return new Color(this.hue, sat, this.lum, this.alpha);
-};
-Color.prototype.deriveAlpha = function(newAlpha) {
-	verifyRange(newAlpha);
-	return new Color(this.hue, this.sat, this.lum, newAlpha);
-};
-Color.prototype.rgbString = function() {
-	const rgb = hslToRgb(this.hue, this.sat, this.lum);
-	rgb[3] = this.a;
-	return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${this.alpha})`;
 };
 Color.possColors = () => {
 	const SATS = [192, 150, 100].map(val => val / 240);

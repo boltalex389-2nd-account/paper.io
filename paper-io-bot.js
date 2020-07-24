@@ -69,8 +69,8 @@ function update(frame) {
 			weights[dir] = 100;
 			weights[mod(dir + 2)] = -9999;
 
-			for (let nd = 0; nd < 4; nd++) {
-				for (let S = 1; S < 20; S++) {
+			for (var nd = 0; nd < 4; nd++) {
+				for (var S = 1; S < 20; S++) {
 					var nr = MOVES[nd][0] * S + row;
 					var nc = MOVES[nd][1] * S + col;
 
@@ -82,7 +82,7 @@ function update(frame) {
 						if (grid.get(nr, nc) !== user) weights[nd]--;
 
 						var tailed = undefined;
-						for (let o of others) {
+						for (var o of others) {
 							if (o.tail.hitsTail(new Loc(nr, nc))) {
 								tailed = o;
 								break;
@@ -99,8 +99,8 @@ function update(frame) {
 
 			//View a selection of choices based on the weights we computed
 			var choices = [];
-			for (let d = 0; d < 4; d++) {
-				for (let S = 1; S < weights[d]; S++) {
+			for (var d = 0; d < 4; d++) {
+				for (var S = 1; S < weights[d]; S++) {
 					choices.push(d);
 				}
 			}
@@ -135,8 +135,8 @@ function update(frame) {
 			weights[dir] = 50;
 			weights[mod(dir + 2)] = -9999;
 
-			for (let nd = 0; nd < 4; nd++) {
-				for (let S = 1; S < 20; S++) {
+			for (var nd = 0; nd < 4; nd++) {
+				for (var S = 1; S < 20; S++) {
 					var nr = MOVES[nd][0] * S + row;
 					var nc = MOVES[nd][1] * S + col;
 
@@ -153,7 +153,7 @@ function update(frame) {
 						if (grid.get(nr, nc) === user) weights[nd] += 10 + S;
 
 						var tailed = undefined;
-						for (let o of others) {
+						for (var o of others) {
 							if (o.tail.hitsTail(new Loc(nr, nc))) {
 								tailed = o;
 								break;
@@ -170,8 +170,8 @@ function update(frame) {
 
 			//View a selection of choices based on the weights we computed
 			var choices = [];
-			for (let d = 0; d < 4; d++) {
-				for (let S = 1; S < weights[d]; S++) {
+			for (var d = 0; d < 4; d++) {
+				for (var S = 1; S < weights[d]; S++) {
 					choices.push(d);
 				}
 			}
