@@ -1,7 +1,7 @@
 function Grid(size, changeCallback) {
-	var grid = new Array(size);
-	var modified = false;
-	var data = {
+	let grid = new Array(size);
+	let modified = false;
+	const data = {
 		grid,
 		size
 	};
@@ -13,7 +13,7 @@ function Grid(size, changeCallback) {
 	this.set = (row, col, value) => {
 		if (isOutOfBounds(data, row, col)) throw new RangeError("Row or Column value out of bounds");
 		if (!grid[row]) grid[row] = new Array(size);
-		var before = grid[row][col];
+		const before = grid[row][col];
 		grid[row][col] = value;
 		if (typeof changeCallback === "function") changeCallback(row, col, before, value);
 		modified = true;

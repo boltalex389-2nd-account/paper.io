@@ -1,35 +1,35 @@
-var { consts } = require("../../config.json");
+const { consts } = require("../../config.json");
 
 exports.Color = require("./color");
 exports.Grid = require("./grid");
 exports.Player = require("./player");
 
 exports.initPlayer = (grid, player) => {
-	for (var dr = -1; dr <= 1; dr++) {
-		for (var dc = -1; dc <= 1; dc++) {
+	for (let dr = -1; dr <= 1; dr++) {
+		for (let dc = -1; dc <= 1; dc++) {
 			if (!grid.isOutOfBounds(dr + player.row, dc + player.col)) grid.set(dr + player.row, dc + player.col, player);
 		}
 	}
 };
 exports.updateFrame = (grid, players, dead, notifyKill) => {
-	var adead = [];
+	let adead = [];
 	if (dead instanceof Array) adead = dead;
 
-	var kill = (!notifyKill) ? () => {} : (killer, other) => {
-			if (!removing[other]) notifyKill(killer, other);
-		};
-
 	//Move players
-	var tmp = players.filter(val => {
+	let tmp = players.filter(val => {
 		val.move();
 		if (val.dead) adead.push(val);
 		return !val.dead;
 	});
 
 	//Remove players with collisions
-	var removing = new Array(players.length);
-	for (var i = 0; i < players.length; i++) {
-		for (var j = i; j < players.length; j++) {
+	const removing = new Array(players.length);
+
+	const kill = (!notifyKill) ? () => { } : (killer, other) => {
+		if (!removing[other]) notifyKill(killer, other);
+	};
+	for (let i = 0; i < players.length; i++) {
+		for (let j = i; j < players.length; j++) {
 
 			//Remove those players when other players have hit their tail
 			if (!removing[j] && players[j].tail.hitsTail(players[i])) {
@@ -57,8 +57,8 @@ exports.updateFrame = (grid, players, dead, notifyKill) => {
 				}
 				else {
 					//...otherwise, the one that sustains most of the collision will be removed
-					var areaI = area(players[i]);
-					var areaJ = area(players[j]);
+					const areaI = area(players[i]);
+					const areaJ = area(players[j]);
 
 					if (areaI === areaJ) {
 						kill(i, j);
@@ -86,13 +86,13 @@ exports.updateFrame = (grid, players, dead, notifyKill) => {
 		return !removing[i];
 	});
 	players.length = tmp.length;
-	for (var i = 0; i < tmp.length; i++) {
+	for (let i = 0; i < tmp.length; i++) {
 		players[i] = tmp[i];
 	}
 
 	//Remove dead squares
-	for (var r = 0; r < grid.size; r++) {
-		for (var c = 0; c < grid.size; c++) {
+	for (let r = 0; r < grid.size; r++) {
+		for (let c = 0; c < grid.size; c++) {
 			if (adead.indexOf(grid.get(r, c)) !== -1) grid.set(r, c, null);
 		}
 	}
@@ -103,7 +103,7 @@ function squaresIntersect(a, b) {
 }
 
 function area(player) {
-	var xDest = player.col * consts.CELL_WIDTH;
-	var yDest = player.row * consts.CELL_WIDTH;
+	const xDest = player.col * consts.CELL_WIDTH;
+	const yDest = player.row * consts.CELL_WIDTH;
 	return (player.posX === xDest) ? Math.abs(player.posY - yDest) : Math.abs(player.posX - xDest);
 }

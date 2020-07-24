@@ -1,21 +1,21 @@
-var io = require("socket.io-client");
-var core = require("./core");
-var { consts } = require("../config.json");
-var running = false;
-var user, socket, frame;
-var players, allPlayers;
-var kills;
-var timeout = undefined;
-var dirty = false;
-var deadFrames = 0;
-var requesting = -1; //Frame that we are requesting at
-var frameCache = []; //Frames after our request
-var allowAnimation = true;
-var grid = new core.Grid(consts.GRID_COUNT, (row, col, before, after) => {
+const io = require("socket.io-client");
+const core = require("./core");
+const { consts } = require("../config.json");
+let running = false;
+let user, socket, frame;
+let players, allPlayers;
+let kills;
+let timeout = undefined;
+let dirty = false;
+let deadFrames = 0;
+let requesting = -1; //Frame that we are requesting at
+let frameCache = []; //Frames after our request
+let allowAnimation = true;
+const grid = new core.Grid(consts.GRID_COUNT, (row, col, before, after) => {
 	invokeRenderer("updateGrid", [row, col, before, after]);
 });
 
-var mimiRequestAnimationFrame;
+let mimiRequestAnimationFrame;
 try {
 	if (window && window.document) {
 		mimiRequestAnimationFrame = window.requestAnimationFrame
@@ -36,8 +36,8 @@ function connectGame(url, name, callback, flag) {
 	running = true;
 	user = null;
 	deadFrames = 0;
-	var prefixes = consts.PREFIXES.split(" ");
-	var names = consts.NAMES.split(" ");
+	const prefixes = consts.PREFIXES.split(" ");
+	const names = consts.NAMES.split(" ");
 	name = name || [prefixes[Math.floor(Math.random() * prefixes.length)], names[Math.floor(Math.random() * names.length)]].join(" ");
 	//Socket connection
 	io.j = [];
@@ -58,17 +58,17 @@ function connectGame(url, name, callback, flag) {
 		reset();
 		//Load players
 		data.players.forEach(p => {
-			var pl = new core.Player(grid, p);
+			const pl = new core.Player(grid, p);
 			addPlayer(pl);
 		});
 		user = allPlayers[data.num];
 		//if (!user) throw new Error();
 		setUser(user);
 		//Load grid
-		var gridData = new Uint8Array(data.grid);
-		for (var r = 0; r < grid.size; r++) {
-			for (var c = 0; c < grid.size; c++) {
-				var ind = gridData[r * grid.size + c] - 1;
+		const gridData = new Uint8Array(data.grid);
+		for (let r = 0; r < grid.size; r++) {
+			for (let c = 0; c < grid.size; c++) {
+				const ind = gridData[r * grid.size + c] - 1;
 				grid.set(r, c, ind === -1 ? null : players[ind]);
 			}
 		}
@@ -76,7 +76,7 @@ function connectGame(url, name, callback, flag) {
 		frame = data.frame;
 		if (requesting !== -1) {
 			//Update those cache frames after we updated game
-			var minFrame = requesting;
+			const minFrame = requesting;
 			requesting = -1;
 			while (frameCache.length > frame - minFrame) processFrame(frameCache[frame - minFrame]);
 			frameCache = [];
@@ -135,8 +135,8 @@ function getPlayers() {
 }
 
 function getOthers() {
-	var ret = [];
-	for (var p of players) {
+	const ret = [];
+	for (const p of players) {
 		if (p !== user) ret.push(p);
 	}
 	return ret;
@@ -156,7 +156,7 @@ function addPlayer(player) {
 }
 
 function invokeRenderer(name, args) {
-	var renderer = exports.renderer;
+	const renderer = exports.renderer;
 	if (renderer && typeof renderer[name] === "function") renderer[name].apply(exports, args);
 }
 
@@ -177,30 +177,30 @@ function processFrame(data) {
 	if (data.newPlayers) {
 		data.newPlayers.forEach(p => {
 			if (user && p.num === user.num) return;
-			var pl = new core.Player(grid, p);
+			const pl = new core.Player(grid, p);
 			addPlayer(pl);
 			core.initPlayer(grid, pl);
 		});
 	}
-	var found = new Array(players.length);
+	const found = new Array(players.length);
 	data.moves.forEach((val, i) => {
-		var player = allPlayers[val.num];
+		const player = allPlayers[val.num];
 		if (!player) return;
 		if (val.left) player.die();
 		found[i] = true;
 		player.heading = val.heading;
 	});
-	for (var i = 0; i < players.length; i++) {
+	for (let i = 0; i < players.length; i++) {
 		//Implicitly leaving game
 		if (!found[i]) {
-			var player = players[i];
+			const player = players[i];
 			player && player.die();
 		}
 	}
 	update();
-	var locs = {};
-	for (var i = 0; i < players.length; i++) {
-		var p = players[i];
+	const locs = {};
+	for (let i = 0; i < players.length; i++) {
+		const p = players[i];
 		locs[p.num] = [p.posX, p.posY, p.waitLag];
 	}
 	dirty = true;
@@ -218,7 +218,7 @@ function paintLoop() {
 	if (user && user.dead) {
 		if (timeout) clearTimeout(timeout);
 		if (deadFrames === 60) { //One second of frame
-			var before = allowAnimation;
+			const before = allowAnimation;
 			allowAnimation = false;
 			update();
 			invokeRenderer("paint", []);
@@ -250,7 +250,7 @@ function setUser(player) {
 }
 
 function update() {
-	var dead = [];
+	const dead = [];
 	core.updateFrame(grid, players, dead, (killer, other) => { //addKill
 		if (players[killer] === user && killer !== other) kills++;
 	});

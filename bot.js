@@ -7,20 +7,23 @@ if (process.argv.length < 3) {
 //TODO: add weight to the max land area and last land area, and also the number of kills
 //TODO: genetic gene pooling
 
-var core = require("./src/core");
-var client = require("./src/game-client");
-var { consts } = require("./config.json");
+const core = require("./src/core");
+const client = require("./src/game-client");
+const { consts } = require("./config.json");
 
-var MOVES = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+const MOVES = [[-1, 0], [0, 1], [1, 0], [0, -1]];
 
-var AGGRESSIVE = Math.random();
-var THRESHOLD = 10;
+const AGGRESSIVE = Math.random();
+const THRESHOLD = 10;
 
-var startFrame = -1;
-var endFrame = -1;
-var coeffs = [0.6164220147940495, -2.519369747858328, 0.9198978109542851, -1.2158956330674564, -3.072901620397528, 5, 4];
-var grid, others, user, playerPortion = {};
-var DIST_TYPES = {
+let startFrame = -1;
+let endFrame = -1;
+const coeffs = [0.6164220147940495, -2.519369747858328, 0.9198978109542851, -1.2158956330674564, -3.072901620397528, 5, 4];
+let grid;
+let others;
+let user;
+const playerPortion = {};
+const DIST_TYPES = {
 	land: {
 		check: function(loc) {
 			return grid.get(loc.row, loc.col) === user;
@@ -64,27 +67,27 @@ function generateLandDirections() {
 		return x;
 	}
 
-	var breadth = Math.floor(Math.random() * coeffs[5]) + 1;
-	var spread = Math.floor(Math.random() * coeffs[6]) + 1;
-	var extra = Math.floor(Math.random() * 2) + 1;
-	var ccw = Math.floor(Math.random() * 2) * 2 - 1;
+	const breadth = Math.floor(Math.random() * coeffs[5]) + 1;
+	const spread = Math.floor(Math.random() * coeffs[6]) + 1;
+	const extra = Math.floor(Math.random() * 2) + 1;
+	const ccw = Math.floor(Math.random() * 2) * 2 - 1;
 
-	var dir = user.currentHeading;
-	var turns = [dir, mod(dir + ccw), mod(dir + ccw * 2), mod(dir + ccw * 3)];
-	var lengths = [breadth, spread, breadth + extra, spread];
+	const dir = user.currentHeading;
+	const turns = [dir, mod(dir + ccw), mod(dir + ccw * 2), mod(dir + ccw * 3)];
+	const lengths = [breadth, spread, breadth + extra, spread];
 
-	var moves = [];
-	for (var i = 0; i < turns.length; i++) {
-		for (var j = 0; j < lengths[i]; j++) {
+	const moves = [];
+	for (let i = 0; i < turns.length; i++) {
+		for (let j = 0; j < lengths[i]; j++) {
 			moves.push(turns[i]);
 		}
 	}
 }
 
-var LAND_CLAIMS = {
+const LAND_CLAIMS = {
 	rectDims: function() {},
 	rectSpread: function() {}
-}
+};
 
 function foundProto(func) {
 	return loc => {
@@ -95,9 +98,9 @@ function foundProto(func) {
 }
 
 function connect() {
-	var prefixes = consts.PREFIXES.split(" ");
-	var names = consts.NAMES.split(" ");
-	var name = process.argv[3] || [prefixes[Math.floor(Math.random() * prefixes.length)], names[Math.floor(Math.random() * names.length)]].join(" ");
+	const prefixes = consts.PREFIXES.split(" ");
+	const names = consts.NAMES.split(" ");
+	const name = process.argv[3] || [prefixes[Math.floor(Math.random() * prefixes.length)], names[Math.floor(Math.random() * names.length)]].join(" ");
 	client.connectGame(process.argv[2], "[BOT] " + name, (success, msg) => {
 		if (!success) {
 			console.error(msg);
@@ -115,7 +118,7 @@ function Loc(row, col, step) {
 
 //Projects vector b onto vector a
 function project(a, b) {
-	var factor = (b[0] * a[0] + b[1] * a[1]) / (a[0] * a[0] + a[1] * a[1]);
+	const factor = (b[0] * a[0] + b[1] * a[1]) / (a[0] * a[0] + a[1] * a[1]);
 	return [factor * a[0], factor * a[1]];
 }
 
@@ -125,31 +128,31 @@ function tail(player, loc) {
 
 function traverseGrid(dir) {
 	steps = new Array(consts.GRID_COUNT * consts.GRID_COUNT);
-	for (var i in steps) {
+	for (let i in steps) {
 		steps[i] = -1;
 	}
 
 	distWeights = {};
-	for (var type in DIST_TYPES) {
+	for (const type in DIST_TYPES) {
 		distWeights[type] = 0;
 	}
 
-	var { row, col } = user;
-	var minRow = Math.max(0, row - 10), maxRow = Math.min(consts.GRID_COUNT, row + 10);
-	var minCol = Math.max(0, col - 10), maxCol = Math.min(consts.GRID_COUNT, col + 10);
+	const { row, col } = user;
+	const minRow = Math.max(0, row - 10), maxRow = Math.min(consts.GRID_COUNT, row + 10);
+	const minCol = Math.max(0, col - 10), maxCol = Math.min(consts.GRID_COUNT, col + 10);
 
-	var proj = 0;
-	for (var i = 1; i >= -1; i-=2) {
+	let proj = 0;
+	for (let i = 1; i >= -1; i-=2) {
 		proj = (1 + THRESHOLD) * i;
 		while (proj != 0) {
 			proj -= i;
-			var normRange = Math.abs(proj);
-			for (var norm = -normRange; norm <= normRange; norm++) {
-				for (var distType in distWeights) {
-					var move = MOVES[dir];
-					var delta = THRESHOLD - Math.abs(proj);
-					var dist = Math.sign(proj) * delta * delta / (Math.abs(norm) + 1)
-					var loc = {row: proj * move[0] + norm * move[1], col: proj * move[1] + norm * move[0]};
+			const normRange = Math.abs(proj);
+			for (let norm = -normRange; norm <= normRange; norm++) {
+				for (const distType in distWeights) {
+					const move = MOVES[dir];
+					const delta = THRESHOLD - Math.abs(proj);
+					const dist = Math.sign(proj) * delta * delta / (Math.abs(norm) + 1);
+					const loc = {row: proj * move[0] + norm * move[1], col: proj * move[1] + norm * move[0]};
 
 					loc.row += user.row;
 					loc.col += user.col;
@@ -164,26 +167,26 @@ function traverseGrid(dir) {
 }
 
 function printGrid() {
-	var chars = new core.Grid(consts.GRID_COUNT);
-	for (var r = 0; r < consts.GRID_COUNT; r++) {
-		for (var c = 0; c < consts.GRID_COUNT; c++) {
+	const chars = new core.Grid(consts.GRID_COUNT);
+	for (let r = 0; r < consts.GRID_COUNT; r++) {
+		for (let c = 0; c < consts.GRID_COUNT; c++) {
 			if (tail(user, {row: r, col: c})) chars.set(r, c, "t");
 			else {
-				var owner = grid.get(r, c);
+				const owner = grid.get(r, c);
 				chars.set(r, c, owner ? "" + owner.num % 10 : ".");
 			}
 		}
 	}
 
-	for (var p of others) {
+	for (const p of others) {
 		chars.set(p.row, p.col, "x");
 	}
 	chars.set(user.row, user.col, "^>V<"[user.currentHeading]);
 
-	var str = "";
-	for (var r = 0; r < consts.GRID_COUNT; r++) {
+	let str = "";
+	for (let r = 0; r < consts.GRID_COUNT; r++) {
 		str += "\n";
-		for (var c = 0; c < consts.GRID_COUNT; c++) {
+		for (let c = 0; c < consts.GRID_COUNT; c++) {
 			str += chars.get(r, c);
 		}
 	}
@@ -197,16 +200,16 @@ function update(frame) {
 		grid = client.grid;
 		others = client.getOthers();
 		//printGrid();
-		var weights = [0, 0, 0, 0];
-		for (var d of [3, 0, 1]) {
-			var weight = 0;
+		const weights = [0, 0, 0, 0];
+		for (let d of [3, 0, 1]) {
+			let weight = 0;
 
 			d = (d + user.currentHeading) % 4;
 			distWeights = traverseGrid(d);
 
-			var str = d + ": "
-			for (var distType in DIST_TYPES) {
-				var point = distWeights[distType] * DIST_TYPES[distType].coeff();
+			let str = d + ": ";
+			for (const distType in DIST_TYPES) {
+				const point = distWeights[distType] * DIST_TYPES[distType].coeff();
 				weight += point;
 				str += distType + ": " + point + ", ";
 			}
@@ -214,17 +217,17 @@ function update(frame) {
 			weights[d] = weight;
 		}
 
-		var low = Math.min(0, Math.min.apply(this, weights));
-		var total = 0;
+		const low = Math.min(0, Math.min.apply(this, weights));
+		let total = 0;
 
 		weights[(user.currentHeading + 2) % 4] = low;
-		for (var i = 0; i < weights.length; i++) {
+		for (let i = 0; i < weights.length; i++) {
 			weights[i] -= low * (1 + Math.random());
 			total += weights[i];
 		}
 
 		if (total == 0) {
-			for (var d of [-1, 0, 1]) {
+			for (let d of [-1, 0, 1]) {
 				d = (d + user.currentHeading) % 4;
 				while (d < 0) d += 4;
 				weights[d] = 1;
@@ -233,8 +236,8 @@ function update(frame) {
 		}
 		//console.log(weights)
 		//Choose a random direction from the weighted list
-		var choice = Math.random() * total;
-		var d = 0;
+		let choice = Math.random() * total;
+		let d = 0;
 		while (choice > weights[d]) {
 			choice -= weights[d++];
 		}
@@ -252,14 +255,14 @@ client.renderer = {
 		playerPortion[player.num] = 0;
 	},
 	disconnect: function() {
-		var dt = (endFrame - startFrame);
+		const dt = (endFrame - startFrame);
 		startFrame = -1;
 		console.log(`[${new Date()}] I died... (survived for ${dt} frames.)`);
 		console.log(`[${new Date()}] I killed ${client.kills} player(s).`);
 		console.log("Coefficients: " + coeffs);
 
-		var mutation = Math.min(10, Math.pow(2, calcFavorability(params)));
-		for (var i = 0; i < coeffs.length; i++) {
+		const mutation = Math.min(10, Math.pow(2, calcFavorability(params)));
+		for (let i = 0; i < coeffs.length; i++) {
 			coeffs[i] += Math.random() * mutation * 2 - mutation;
 		}
 		connect();

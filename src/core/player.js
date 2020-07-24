@@ -1,7 +1,7 @@
-var Stack = require("./stack");
-var Color = require("./color");
-var Grid = require("./grid");
-var { consts } = require("../../config.json");
+const Stack = require("./stack");
+const Color = require("./color");
+const Grid = require("./grid");
+const { consts } = require("../../config.json");
 
 function defineGetter(getter) {
 	return {
@@ -11,19 +11,19 @@ function defineGetter(getter) {
 }
 
 function defineInstanceMethods(thisobj, data /*, methods...*/) {
-	for (var i = 2; i < arguments.length; i++) {
+	for (let i = 2; i < arguments.length; i++) {
 		thisobj[arguments[i].name] = arguments[i].bind(this, data);
 	}
 }
 
 function defineAccessorProperties(thisobj, data /*, names...*/) {
-	var descript = {};
+	const descript = {};
 	function getAt(name) {
 		return () => {
 			return data[name];
 		};
 	}
-	for (var i = 2; i < arguments.length; i++) {
+	for (let i = 2; i < arguments.length; i++) {
 		descript[arguments[i]] = defineGetter(getAt(arguments[i]));
 	}
 	Object.defineProperties(thisobj, descript);
@@ -38,7 +38,7 @@ function TailMove(orientation) {
 }
 
 function Tail(player, sdata) {
-	var data = {
+	const data = {
 		tail: [],
 		tailGrid: [],
 		prev: null,
@@ -85,8 +85,8 @@ function addTail(data, orientation, count) {
 	if (count === undefined) count = 1;
 	if (!count || count < 0) return;
 
-	var prev = data.prev;
-	var r = data.prevRow, c = data.prevCol;
+	let prev = data.prev;
+	const r = data.prevRow, c = data.prevCol;
 	if (data.tail.length === 0) setTailGrid(data, data.tailGrid, r, c);
 
 	if (!prev || prev.orientation !== orientation) {
@@ -96,8 +96,8 @@ function addTail(data, orientation, count) {
 	}
 	else prev.move += count;
 
-	for (var i = 0; i < count; i++) {
-		var pos = walk([data.prevRow, data.prevCol], null, orientation, 1);
+	for (let i = 0; i < count; i++) {
+		const pos = walk([data.prevRow, data.prevCol], null, orientation, 1);
 		data.prevRow = pos[0];
 		data.prevCol = pos[1];
 		setTailGrid(data, data.tailGrid, pos[0], pos[1]);
@@ -110,7 +110,7 @@ function reposition(data, row, col) {
 	data.prev = null;
 	if (data.tail.length === 0) return;
 	else {
-		var ret = data.tail;
+		const ret = data.tail;
 		data.tail = [];
 		data.tailGrid = [];
 		return ret;
@@ -123,16 +123,16 @@ function renderTail(data, ctx) {
 
 	ctx.fillStyle = data.player.tailColor.rgbString();
 
-	var prevOrient = -1;
-	var start = [data.startRow, data.startCol];
+	let prevOrient = -1;
+	let start = [data.startRow, data.startCol];
 
 	//fillTailRect(ctx, start, start);
 	data.tail.forEach(tail => {
-		var negDir = tail.orientation === 0 || tail.orientation === 3;
+		const negDir = tail.orientation === 0 || tail.orientation === 3;
 
-		var back = start;
+		const back = start;
 		if (!negDir) start = walk(start, null, tail.orientation, 1);
-		var finish = walk(start, null, tail.orientation, tail.move - 1);
+		const finish = walk(start, null, tail.orientation, tail.move - 1);
 
 		if (tail.move > 1) fillTailRect(ctx, start, finish);
 		if (prevOrient !== -1) renderCorner(ctx, back, prevOrient, tail.orientation);
@@ -142,7 +142,7 @@ function renderTail(data, ctx) {
 		prevOrient = tail.orientation;
 	});
 
-	var curOrient = data.player.currentHeading;
+	const curOrient = data.player.currentHeading;
 	if (prevOrient === curOrient) fillTailRect(ctx, start, start);
 	else renderCorner(ctx, start, prevOrient, curOrient);
 }
@@ -151,15 +151,15 @@ function renderCorner(ctx, cornerStart, dir1, dir2) {
 	if (dir1 === 0 || dir2 === 0) walk(cornerStart, cornerStart, 2, 1);
 	if (dir1 === 3 || dir2 === 3) walk(cornerStart, cornerStart, 1, 1);
 
-	var a = walk(cornerStart, null, dir2, 1);
-	var b = walk(a, null, dir1, 1);
+	const a = walk(cornerStart, null, dir2, 1);
+	const b = walk(a, null, dir1, 1);
 
-	var triangle = new Path2D();
+	const triangle = new Path2D();
 	triangle.moveTo(cornerStart[1] * consts.CELL_WIDTH, cornerStart[0] * consts.CELL_WIDTH);
 	triangle.lineTo(a[1] * consts.CELL_WIDTH, a[0] * consts.CELL_WIDTH);
 	triangle.lineTo(b[1] * consts.CELL_WIDTH, b[0] * consts.CELL_WIDTH);
 	triangle.closePath();
-	for (var i = 0; i < 2; i++) {
+	for (let i = 0; i < 2; i++) {
 		ctx.fill(triangle);
 	}
 }
@@ -178,10 +178,10 @@ function walk(from, ret, orient, dist) {
 }
 
 function fillTailRect(ctx, start, end) {
-	var x = start[1] * consts.CELL_WIDTH;
-	var y = start[0] * consts.CELL_WIDTH;
-	var width = (end[1] - start[1]) * consts.CELL_WIDTH;
-	var height = (end[0] - start[0]) * consts.CELL_WIDTH;
+	let x = start[1] * consts.CELL_WIDTH;
+	let y = start[0] * consts.CELL_WIDTH;
+	let width = (end[1] - start[1]) * consts.CELL_WIDTH;
+	let height = (end[0] - start[0]) * consts.CELL_WIDTH;
 
 	if (width === 0) width += consts.CELL_WIDTH;
 	if (height === 0) height += consts.CELL_WIDTH;
@@ -204,16 +204,16 @@ function fillTail(data) {
 		return data.tailGrid[c[0]] && data.tailGrid[c[0]][c[1]];
 	}
 
-	var grid = data.grid;
-	var start = [data.startRow, data.startCol];
-	var been = new Grid(grid.size);
-	var coords = [];
+	const grid = data.grid;
+	const start = [data.startRow, data.startCol];
+	const been = new Grid(grid.size);
+	const coords = [];
 
 	coords.push(start);
 	while (coords.length > 0) { //BFS for all tail spaces
-		var coord = coords.shift();
-		var r = coord[0];
-		var c = coord[1];
+		const coord = coords.shift();
+		const r = coord[0];
+		const c = coord[1];
 
 		if (grid.isOutOfBounds(r, c) || been.get(r, c)) continue;
 
@@ -240,18 +240,19 @@ function floodFill(data, grid, row, col, been) {
 		return data.tailGrid[c[0]] && data.tailGrid[c[0]][c[1]];
 	}
 
-	var start = [row, col];
+	const start = [row, col];
 	if (grid.isOutOfBounds(row, col) || been.get(row, col) || onTail(start) || grid.get(row, col) === data.player) return;
 	//Avoid allocating too many resources
-	var coords = [];
-	var filled = new Stack(consts.GRID_COUNT * consts.GRID_COUNT + 1);
-	var surrounded = true;
+	const coords = [];
+	const filled = new Stack(consts.GRID_COUNT * consts.GRID_COUNT + 1);
+	let surrounded = true;
+	let coord;
 
 	coords.push(start);
 	while (coords.length > 0) {
-		var coord = coords.shift();
-		var r = coord[0];
-		var c = coord[1];
+		coord = coords.shift();
+		const r = coord[0];
+		const c = coord[1];
 
 		if (grid.isOutOfBounds(r, c)) {
 			surrounded = false;
@@ -285,10 +286,10 @@ function hitsTail(data, other) {
 	&& !!(data.tailGrid[other.row] && data.tailGrid[other.row][other.col]);
 }
 
-var SHADOW_OFFSET = 10;
+const SHADOW_OFFSET = 10;
 
 function Player(grid, sdata) {
-	var data = {};
+	const data = {};
 
 	//Parameters
 	data.num = sdata.num;
@@ -301,10 +302,10 @@ function Player(grid, sdata) {
 	data.dead = false;
 
 	//Only need colors for client side
-	var base;
+	let base;
 	if (sdata.base) base = this.baseColor = sdata.base instanceof Color ? sdata.base : Color.fromData(sdata.base);
 	else {
-		var hue = Math.random();
+		const hue = Math.random();
 		this.baseColor = base = new Color(hue, .8, .5);
 	}
 	this.lightBaseColor = base.deriveLumination(.1);
@@ -365,8 +366,8 @@ Player.prototype.render = function(ctx, fade) {
 	ctx.fillStyle = this.shadowColor.deriveAlpha(fade).rgbString();
 	ctx.fillRect(this.posX, this.posY, consts.CELL_WIDTH, consts.CELL_WIDTH);
 
-	var mid = consts.CELL_WIDTH / 2;
-	var grd = ctx.createRadialGradient(this.posX + mid, this.posY + mid - SHADOW_OFFSET, 1, this.posX + mid, this.posY + mid - SHADOW_OFFSET, consts.CELL_WIDTH);
+	const mid = consts.CELL_WIDTH / 2;
+	const grd = ctx.createRadialGradient(this.posX + mid, this.posY + mid - SHADOW_OFFSET, 1, this.posX + mid, this.posY + mid - SHADOW_OFFSET, consts.CELL_WIDTH);
 	//grd.addColorStop(0, this.baseColor.deriveAlpha(fade).rgbString());
 	//grd.addColorStop(1, new Color(0, 0, 1, fade).rgbString());
 	//ctx.fillStyle = grd;
@@ -377,7 +378,7 @@ Player.prototype.render = function(ctx, fade) {
 	ctx.fillStyle = this.shadowColor.deriveAlpha(fade).rgbString();
 	ctx.textAlign = "center";
 
-	var yoff = -SHADOW_OFFSET * 2;
+	let yoff = -SHADOW_OFFSET * 2;
 	if (this.row === 0) yoff = SHADOW_OFFSET * 2 + consts.CELL_WIDTH;
 	ctx.font = "18px Changa";
 	ctx.fillText(this.name, this.posX + consts.CELL_WIDTH / 2, this.posY + yoff);
@@ -389,7 +390,7 @@ function move(data) {
 		return;
 	}
 	//Move to new position
-	var { heading } = this;
+	let { heading } = this;
 	if (this.posX % consts.CELL_WIDTH !== 0 || this.posY % consts.CELL_WIDTH !== 0) heading = data.currentHeading;
 	else data.currentHeading = heading;
 	switch (heading) {
@@ -399,7 +400,7 @@ function move(data) {
 		case 3: data.posX -= consts.SPEED; break; //LEFT
 	}
 	//Check for out of bounds
-	var { row, col } = this;
+	const { row, col } = this;
 	if (data.grid.isOutOfBounds(row, col)) {
 		data.dead = true;
 		return;

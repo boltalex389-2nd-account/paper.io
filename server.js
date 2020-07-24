@@ -8,14 +8,14 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const { exec, fork } = require("child_process");
 
-var config = require("./config.json");
+const config = require("./config.json");
 config.dev ? exec("npm run build-dev") : exec("npm run build");
 
 if (!(config.port >= 0 && config.port < 65536 && config.port % 1 === 0)) {
 	console.error("[ERROR] `port` argument must be an integer >= 0 and < 65536. Default value will be used.");
 	config.port = 8080;
 }
-var port = process.env.PORT || config.port;
+const port = process.env.PORT || config.port;
 
 server.listen(port, () => {
 	console.log(chalk.yellow("Server available on:"));
@@ -33,8 +33,8 @@ server.listen(port, () => {
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/font", express.static(path.join(__dirname, "node_modules/@fortawesome/fontawesome-free")));
 
-var Game = require("./src/game-server");
-var game = new Game();
+const Game = require("./src/game-server");
+const game = new Game();
 io.set("transports", ["websocket"]);
 io.on("connection", socket => {
 	socket.on("hello", (data, fn) => {
@@ -57,7 +57,7 @@ setInterval(() => {
 	game.tickFrame();
 }, 1000 / 60);
 
-for (var i = 0; i < parseInt(config.bots); i++) {
+for (let i = 0; i < parseInt(config.bots); i++) {
 	fork(path.join(__dirname, "paper-io-bot.js"), [`ws://localhost:${port}`], {
 		stdio: 'inherit'
 	});

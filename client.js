@@ -1,6 +1,6 @@
 window.$ = window.jQuery = require("jquery");
-var io = require("socket.io-client");
-var client = require("./src/game-client");
+const io = require("socket.io-client");
+const client = require("./src/game-client");
 
 function run(flag) {
 	client.renderer = flag ? require("./src/mode/god") : require("./src/mode/player");
@@ -16,14 +16,14 @@ function run(flag) {
 }
 
 $(document).ready(() => {
-	var err = $("#error");
+	const err = $("#error");
 	if (!window.WebSocket) {
 		err.text("Your browser does not support WebSockets!");
 		return;
 	}
 	err.text("Loading... Please wait"); //TODO: show loading screen
 	(() => {
-		var socket = io(`//${location.host}`, {
+		const socket = io(`//${location.host}`, {
 			forceNew: true,
 			upgrade: false,
 			transports: ["websocket"]
@@ -51,7 +51,7 @@ $(document).ready(() => {
 });
 //Event listeners
 $(document).keydown(e => {
-	var newHeading = -1;
+	let newHeading = -1;
 	switch (e.key) {
 		case "w": case "ArrowUp":
 		newHeading = 0; break; //UP (W)
@@ -72,14 +72,14 @@ $(document).on("touchmove", e => {
 });
 
 $(document).on("touchstart", e1 => {
-	var x1 = e1.targetTouches[0].pageX;
-	var y1 = e1.targetTouches[0].pageY;
+	const x1 = e1.targetTouches[0].pageX;
+	const y1 = e1.targetTouches[0].pageY;
 	$(document).one("touchend", e2 => {
-		var x2 = e2.changedTouches[0].pageX;
-		var y2 = e2.changedTouches[0].pageY;
-		var deltaX = x2 - x1;
-		var deltaY = y2 - y1;
-		var newHeading = -1;
+		const x2 = e2.changedTouches[0].pageX;
+		const y2 = e2.changedTouches[0].pageY;
+		const deltaX = x2 - x1;
+		const deltaY = y2 - y1;
+		let newHeading = -1;
 		if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX)) newHeading = 0;
 		else if (deltaX > 0 && Math.abs(deltaY) < deltaX) newHeading = 1;
 		else if (deltaY > 0 && Math.abs(deltaX) < deltaY) newHeading = 2;

@@ -3,15 +3,19 @@ if (process.argv.length < 3) {
 	process.exit(1);
 }
 
-var core = require("./src/core");
-var client = require("./src/game-client");
-var { consts } = require("./config.json");
+const core = require("./src/core");
+const client = require("./src/game-client");
+const { consts } = require("./config.json");
 
-var MOVES = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+const MOVES = [[-1, 0], [0, 1], [1, 0], [0, -1]];
 
-var startFrame = -1;
-var endFrame = -1;
-var grid, others, user, playerPortion = {}, claim = [];
+let startFrame = -1;
+let endFrame = -1;
+let grid;
+let others;
+let user;
+const playerPortion = {};
+let claim = [];
 
 function mod(x) {
 	x %= 4;
@@ -20,9 +24,9 @@ function mod(x) {
 }
 
 function connect() {
-	var prefixes = consts.PREFIXES.split(" ");
-	var names = consts.NAMES.split(" ");
-	var name = process.argv[3] || [prefixes[Math.floor(Math.random() * prefixes.length)], names[Math.floor(Math.random() * names.length)]].join(" ");
+	const prefixes = consts.PREFIXES.split(" ");
+	const names = consts.NAMES.split(" ");
+	const name = process.argv[3] || [prefixes[Math.floor(Math.random() * prefixes.length)], names[Math.floor(Math.random() * names.length)]].join(" ");
 	client.connectGame(process.argv[2], "[BOT] " + name, function(success, msg) {
 		if (!success) {
 			console.error(msg);
@@ -43,27 +47,30 @@ function update(frame) {
 	endFrame = frame;
 
 	if (frame % 6 == (startFrame + 1) % 6) {
-		grid = client.grid;
-		others = client.getOthers();
+        grid = client.grid;
+        others = client.getOthers();
 
-		//Note: the code below isn't really my own code. This code is in fact the
-		//approximate algorithm used by the paper.io game. It has been modified from
-		//the original code (i.e. deobfuscating) and made more efficient in some
-		//areas (and some tweaks), otherwise, the original logic is about the same.
-		var row = user.row, col = user.col, dir = user.currentHeading;
-		var thres = (.05 + .1 * Math.random()) * consts.GRID_COUNT * consts.GRID_COUNT;
+        //Note: the code below isn't really my own code. This code is in fact the
+        //approximate algorithm used by the paper.io game. It has been modified from
+        //the original code (i.e. deobfuscating) and made more efficient in some
+        //areas (and some tweaks), otherwise, the original logic is about the same.
+        const row = user.row;
 
-		if (row < 0 || col < 0 || row >= consts.GRID_COUNT || col >= consts.GRID_COUNT) return;
+        const col = user.col;
+        let dir = user.currentHeading;
+        const thres = (.05 + .1 * Math.random()) * consts.GRID_COUNT * consts.GRID_COUNT;
 
-		if (grid.get(row, col) === user) {
+        if (row < 0 || col < 0 || row >= consts.GRID_COUNT || col >= consts.GRID_COUNT) return;
+
+        if (grid.get(row, col) === user) {
 			//When we are inside our territory
 			claim = [];
 			weights = [25, 25, 25, 25];
 			weights[dir] = 100;
 			weights[mod(dir + 2)] = -9999;
 
-			for (var nd = 0; nd < 4; nd++) {
-				for (var S = 1; S < 20; S++) {
+			for (let nd = 0; nd < 4; nd++) {
+				for (let S = 1; S < 20; S++) {
 					var nr = MOVES[nd][0] * S + row;
 					var nc = MOVES[nd][1] * S + col;
 
@@ -75,7 +82,7 @@ function update(frame) {
 						if (grid.get(nr, nc) !== user) weights[nd]--;
 
 						var tailed = undefined;
-						for (var o of others) {
+						for (let o of others) {
 							if (o.tail.hitsTail(new Loc(nr, nc))) {
 								tailed = o;
 								break;
@@ -92,8 +99,8 @@ function update(frame) {
 
 			//View a selection of choices based on the weights we computed
 			var choices = [];
-			for (var d = 0; d < 4; d++) {
-				for (var S = 1; S < weights[d]; S++) {
+			for (let d = 0; d < 4; d++) {
+				for (let S = 1; S < weights[d]; S++) {
 					choices.push(d);
 				}
 			}
@@ -104,15 +111,15 @@ function update(frame) {
 		else if (playerPortion[user.num] < thres) {
 			//Claim some land if we are relatively tiny and have little to risk.
 			if (claim.length === 0) {
-				var breadth = 4 * Math.random() + 2;
-				var length = 4 * Math.random() + 2;
-				var ccw = 2 * Math.floor(2 * Math.random()) - 1;
+				const breadth = 4 * Math.random() + 2;
+				const length = 4 * Math.random() + 2;
+				const ccw = 2 * Math.floor(2 * Math.random()) - 1;
 
 				turns = [dir, mod(dir + ccw), mod(dir + ccw * 2), mod(dir + ccw * 3)];
 				lengths = [breadth, length, breadth + 2 * Math.random() + 1, length];
 
-				for (var i = 0; i < turns.length; i++) {
-					for (var j = 0; j < lengths[i]; j++) {
+				for (let i = 0; i < turns.length; i++) {
+					for (let j = 0; j < lengths[i]; j++) {
 						claim.push(turns[i]);
 					}
 				}
@@ -128,8 +135,8 @@ function update(frame) {
 			weights[dir] = 50;
 			weights[mod(dir + 2)] = -9999;
 
-			for (var nd = 0; nd < 4; nd++) {
-				for (var S = 1; S < 20; S++) {
+			for (let nd = 0; nd < 4; nd++) {
+				for (let S = 1; S < 20; S++) {
 					var nr = MOVES[nd][0] * S + row;
 					var nc = MOVES[nd][1] * S + col;
 
@@ -146,7 +153,7 @@ function update(frame) {
 						if (grid.get(nr, nc) === user) weights[nd] += 10 + S;
 
 						var tailed = undefined;
-						for (var o of others) {
+						for (let o of others) {
 							if (o.tail.hitsTail(new Loc(nr, nc))) {
 								tailed = o;
 								break;
@@ -163,8 +170,8 @@ function update(frame) {
 
 			//View a selection of choices based on the weights we computed
 			var choices = [];
-			for (var d = 0; d < 4; d++) {
-				for (var S = 1; S < weights[d]; S++) {
+			for (let d = 0; d < 4; d++) {
+				for (let S = 1; S < weights[d]; S++) {
 					choices.push(d);
 				}
 			}
@@ -172,8 +179,8 @@ function update(frame) {
 			if (choices.length === 0) choices.push(dir);
 			dir = choices[Math.floor(Math.random() * choices.length)];
 		}
-		client.changeHeading(dir);
-	}
+        client.changeHeading(dir);
+    }
 }
 
 function calcFavorability(params) {
@@ -186,7 +193,7 @@ client.renderer = {
 		playerPortion[player.num] = 0;
 	},
 	disconnect: function() {
-		var dt = (endFrame - startFrame);
+		const dt = (endFrame - startFrame);
 		startFrame = -1;
 
 		console.log(`[${new Date()}] I died... (survived for ${dt} frames.)`);

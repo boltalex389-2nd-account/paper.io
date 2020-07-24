@@ -1,6 +1,6 @@
 function Stack(initSize) {
-	var len = 0;
-	var arr = [];
+	let len = 0;
+	const arr = [];
 	this.ensureCapacity = size => {
 		arr.length = Math.max(arr.length, size || 0);
 	};
@@ -11,7 +11,7 @@ function Stack(initSize) {
 	this.pop = function() {
 		if (len === 0) return;
 		len--;
-		var tmp = this[len];
+		const tmp = this[len];
 		this[len] = undefined;
 		return tmp;
 	};

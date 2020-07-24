@@ -1,16 +1,16 @@
-var core = require("./core");
-var { consts } = require("../config.json");
+const core = require("./core");
+const { consts } = require("../config.json");
 
 function Game(id) {
-	var possColors = core.Color.possColors();
-	var nextInd = 0;
-	var players = [];
-	var gods = [];
-	var newPlayers = [];
-	var frameLocs = [];
-	var frame = 0;
-	var filled = 0;
-	var grid = new core.Grid(consts.GRID_COUNT, (row, col, before, after) => {
+	const possColors = core.Color.possColors();
+	let nextInd = 0;
+	const players = [];
+	const gods = [];
+	let newPlayers = [];
+	const frameLocs = [];
+	let frame = 0;
+	let filled = 0;
+	const grid = new core.Grid(consts.GRID_COUNT, (row, col, before, after) => {
 		if (!!after ^ !!before) {
 			if (after) filled++;
 			else filled--;
@@ -20,9 +20,9 @@ function Game(id) {
 	this.id = id;
 	this.addPlayer = (client, name) => {
 		if (players.length >= consts.MAX_PLAYERS) return false;
-		var start = findEmpty(grid);
+		const start = findEmpty(grid);
 		if (!start) return false;
-		var params = {
+		const params = {
 			posX: start.col * consts.CELL_WIDTH,
 			posY: start.row * consts.CELL_WIDTH,
 			currentHeading: Math.floor(Math.random() * 4),
@@ -30,7 +30,7 @@ function Game(id) {
 			num: nextInd,
 			base: possColors.shift()
 		};
-		var p = new core.Player(grid, params);
+		const p = new core.Player(grid, params);
 		p.tmpHeading = params.currentHeading;
 		p.client = client;
 		players.push(p);
@@ -41,7 +41,7 @@ function Game(id) {
 		client.on("requestFrame", () => {
 			if (p.frame === frame) return;
 			p.frame = frame; //Limit number of requests per frame (One per frame)
-			var splayers = players.map(val => val.serialData());
+			const splayers = players.map(val => val.serialData());
 			client.emit("game", {
 				"num": p.num,
 				"gameid": id,
@@ -77,12 +77,12 @@ function Game(id) {
 		return true;
 	};
 	this.addGod = client => {
-		var g = {
+		const g = {
 			client,
 			frame
-		}
+		};
 		gods.push(g);
-		var splayers = players.map(val => val.serialData());
+		const splayers = players.map(val => val.serialData());
 		client.emit("game", {
 			"gameid": id,
 			"frame": frame,
@@ -92,7 +92,7 @@ function Game(id) {
 		client.on("requestFrame", () => {
 			if (g.frame === frame) return;
 			g.frame = frame; //Limit number of requests per frame (One per frame)
-			var splayers = players.map(val => val.serialData());
+			const splayers = players.map(val => val.serialData());
 			g.client.emit("game", {
 				"gameid": id,
 				"frame": frame,
@@ -104,8 +104,8 @@ function Game(id) {
 	};
 
 	function pushPlayerLocations() {
-		var locs = [];
-		for (var p of players) {
+		const locs = [];
+		for (const p of players) {
 			locs[p.num] = [p.posX, p.posY, p.waitLag];
 		}
 		locs.frame = frame;
@@ -114,7 +114,7 @@ function Game(id) {
 	}
 
 	function verifyPlayerLocations(fr, verify, resp) {
-		var minFrame = frame - frameLocs.length + 1;
+		const minFrame = frame - frameLocs.length + 1;
 		if (fr < minFrame || fr > frame) {
 			resp(false, false, "Frames out of reference");
 			return;
@@ -123,12 +123,12 @@ function Game(id) {
 		function string(loc) {
 			return `(${loc[0]}, ${loc[1]}) [${loc[2]}]`;
 		}
-		var locs = frameLocs[fr - minFrame];
+		const locs = frameLocs[fr - minFrame];
 		if (locs.frame !== fr) {
 			resp(false, false, locs.frame + " != " + fr);
 			return;
 		}
-		for (var num in verify) {
+		for (const num in verify) {
 			if (!locs[num]) continue;
 			if (locs[num][0] !== verify[num][0] || locs[num][1] !== verify[num][1] || locs[num][2] !== verify[num][2]) {
 				resp(false, true, "P" + num + " " + string(locs[num]) + " !== " + string(verify[num]));
@@ -140,8 +140,8 @@ function Game(id) {
 
 	function tick() {
 		//TODO: notify those players that this server automatically drops out
-		var splayers = players.map(val => val.serialData());
-		var snews = newPlayers.map(val => {
+		const splayers = players.map(val => val.serialData());
+		const snews = newPlayers.map(val => {
 			//Emit game stats.
 			val.client.emit("game", {
 				"num": val.num,
@@ -152,7 +152,7 @@ function Game(id) {
 			});
 			return val.serialData();
 		});
-		var moves = players.map(val => {
+		const moves = players.map(val => {
 			//Account for race condition (when heading is set after emitting frames, and before updating)
 			val.heading = val.tmpHeading;
 			return {
@@ -162,7 +162,7 @@ function Game(id) {
 			};
 		});
 		update();
-		var data = {
+		const data = {
 			frame: frame + 1,
 			moves
 		};
@@ -170,10 +170,10 @@ function Game(id) {
 			data.newPlayers = snews;
 			newPlayers = [];
 		}
-		for (var p of players) {
+		for (const p of players) {
 			p.client.emit("notifyFrame", data);
 		}
-		for (var g of gods) {
+		for (const g of gods) {
 			g.client.emit("notifyFrame", data);
 		}
 		frame++;
@@ -182,9 +182,9 @@ function Game(id) {
 	this.tickFrame = tick;
 
 	function update() {
-		var dead = [];
+		const dead = [];
 		core.updateFrame(grid, players, dead);
-		for (var p of dead) {
+		for (const p of dead) {
 			if (!p.handledDead) {
 				possColors.push(p.baseColor);
 				p.handledDead = true;
@@ -201,14 +201,14 @@ function checkInt(value, min, max) {
 }
 
 function gridSerialData(grid, players) {
-	var buff = Buffer.alloc(grid.size * grid.size);
-	var numToIndex = new Array(players.length > 0 ? players[players.length - 1].num + 1 : 0);
-	for (var i = 0; i < players.length; i++) {
+	const buff = Buffer.alloc(grid.size * grid.size);
+	const numToIndex = new Array(players.length > 0 ? players[players.length - 1].num + 1 : 0);
+	for (let i = 0; i < players.length; i++) {
 		numToIndex[players[i].num] = i + 1;
 	}
-	for (var r = 0; r < grid.size; r++) {
-		for (var c = 0; c < grid.size; c++) {
-			var ele = grid.get(r, c);
+	for (let r = 0; r < grid.size; r++) {
+		for (let c = 0; c < grid.size; c++) {
+			const ele = grid.get(r, c);
 			buff[r * grid.size + c] = ele ? numToIndex[ele.num] : 0;
 		}
 	}
@@ -216,12 +216,12 @@ function gridSerialData(grid, players) {
 }
 
 function findEmpty(grid) {
-	var available = [];
-	for (var r = 1; r < grid.size - 1; r++) {
-		for (var c = 1; c < grid.size - 1; c++) {
-			var cluttered = false;
-			checkclutter: for (var dr = -1; dr <= 1; dr++) {
-				for (var dc = -1; dc <= 1; dc++) {
+	const available = [];
+	for (let r = 1; r < grid.size - 1; r++) {
+		for (let c = 1; c < grid.size - 1; c++) {
+			let cluttered = false;
+			checkclutter: for (let dr = -1; dr <= 1; dr++) {
+				for (let dc = -1; dc <= 1; dc++) {
 					if (grid.get(r + dr, c + dc)) {
 						cluttered = true;
 						break checkclutter;
